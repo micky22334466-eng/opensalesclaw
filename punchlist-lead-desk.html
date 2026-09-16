@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Punchlist — Lead Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --concrete:#DCDBD5;
+    --concrete-dark:#C4C3BC;
+    --slab:#F1F0EB;
+    --ink:#16233A;
+    --ink-soft:#4B586E;
+    --pencil:#E8B71D;
+    --tape:#B8322C;
+    --green:#2E6B4F;
+    --line:#B3B2AA;
+    --display:"Barlow Condensed","Haettenschweiler","Arial Narrow",sans-serif;
+    --body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--concrete);
+    background-image:
+      linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);
+    background-size:22px 22px;
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:15px;
+    line-height:1.45;
+    padding-bottom:64px;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 14px}
+
+  /* ---------- masthead ---------- */
+  header{
+    background:var(--ink);
+    color:var(--slab);
+    border-bottom:5px solid var(--pencil);
+  }
+  .mast{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:18px 0 14px}
+  .brand{font-family:var(--display);font-weight:700;font-size:38px;line-height:.9;letter-spacing:.02em;text-transform:uppercase}
+  .brand span{color:var(--pencil)}
+  .kicker{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#9AA6BA;margin-top:6px}
+  .stamp{
+    font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    border:1px solid #47546B;padding:5px 8px;color:#9AA6BA;white-space:nowrap
+  }
+
+  /* ---------- stat strip ---------- */
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);background:#0F1A2C}
+  .stat{padding:11px 12px;border-left:1px solid #26334A}
+  .stat:first-child{border-left:0}
+  .stat b{display:block;font-family:var(--mono);font-weight:700;font-size:19px;color:var(--pencil);line-height:1.2}
+  .stat i{display:block;font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#8C99AD;margin-top:3px}
+
+  /* ---------- tabs ---------- */
+  nav{display:flex;gap:0;margin:16px 0 14px;border:2px solid var(--ink);background:var(--slab)}
+  nav button{
+    flex:1;font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    background:transparent;border:0;border-right:2px solid var(--ink);padding:10px 4px;cursor:pointer;color:var(--ink)
+  }
+  nav button:last-child{border-right:0}
+  nav button[aria-selected="true"]{background:var(--ink);color:var(--pencil)}
+
+  /* ---------- job ticket (signature) ---------- */
+  .ticket{
+    display:flex;background:var(--slab);border:1px solid var(--line);
+    box-shadow:3px 3px 0 rgba(22,35,58,.13);margin-bottom:12px
+  }
+  .rail{
+    width:62px;flex:none;background:var(--ink);color:var(--slab);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;
+    border-right:2px dashed var(--concrete);position:relative
+  }
+  .rail .sc{font-family:var(--mono);font-weight:700;font-size:24px;line-height:1;color:var(--pencil)}
+  .rail .scl{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:#8C99AD;margin-top:4px;text-transform:uppercase}
+  .rail.hot{background:var(--tape)} .rail.hot .sc{color:#FFF} .rail.hot .scl{color:#F1C9C7}
+  .rail.warm .sc{color:var(--pencil)}
+  .rail.cold{background:#5B6678} .rail.cold .sc{color:#DCDBD5}
+
+  .body{flex:1;padding:11px 13px;min-width:0}
+  .tno{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-soft);text-transform:uppercase}
+  .job{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.05;margin:2px 0 5px;text-transform:uppercase}
+  .meta{font-size:13px;color:var(--ink-soft);word-break:break-word}
+  .meta b{color:var(--ink);font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .chip{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);padding:3px 6px;background:#fff}
+  .chip.keep{background:var(--green);color:#fff;border-color:var(--green)}
+  .chip.sell{background:var(--pencil);border-color:#B78E0F}
+  .chip.price{background:var(--ink);color:var(--pencil);border-color:var(--ink)}
+  .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .acts button, .linky{
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    background:#fff;border:1px solid var(--ink);padding:5px 8px;cursor:pointer;color:var(--ink)
+  }
+  .acts button:hover{background:var(--pencil)}
+  .acts button.danger:hover{background:var(--tape);color:#fff;border-color:var(--tape)}
+
+  /* ---------- forms ---------- */
+  .panel{background:var(--slab);border:2px solid var(--ink);padding:16px;box-shadow:4px 4px 0 rgba(22,35,58,.15)}
+  .panel h2{font-family:var(--display);font-size:26px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1}
+  .panel p.sub{font-size:13px;color:var(--ink-soft);margin:5px 0 15px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .f{display:flex;flex-direction:column;gap:4px}
+  .f.full{grid-column:1/-1}
+  label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+  input,select,textarea{
+    font-family:var(--body);font-size:15px;padding:9px 10px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);width:100%;border-radius:0
+  }
+  textarea{min-height:66px;resize:vertical}
+  input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--pencil);outline-offset:1px}
+  .submit{
+    font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+    background:var(--ink);color:var(--pencil);border:0;padding:13px;width:100%;cursor:pointer;margin-top:14px
+  }
+  .submit:hover{background:var(--tape);color:#fff}
+
+  /* ---------- filters ---------- */
+  .filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px;align-items:center}
+  .filters select,.filters input{width:auto;flex:1;min-width:120px;font-size:13px;padding:7px 8px}
+  .ghost{
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    background:transparent;border:1px solid var(--ink);padding:7px 9px;cursor:pointer;color:var(--ink)
+  }
+  .ghost:hover{background:var(--ink);color:var(--pencil)}
+
+  /* ---------- empty + toast ---------- */
+  .empty{background:var(--slab);border:2px dashed var(--line);padding:30px 18px;text-align:center}
+  .empty h3{font-family:var(--display);font-size:24px;text-transform:uppercase;font-weight:600}
+  .empty p{font-size:13px;color:var(--ink-soft);margin:6px 0 14px}
+  .toast{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:50;
+    background:var(--ink);color:var(--pencil);font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+    text-transform:uppercase;padding:11px 16px;border-left:4px solid var(--pencil);
+    opacity:0;pointer-events:none;transition:opacity .18s
+  }
+  .toast.on{opacity:1}
+
+  /* ---------- money table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--slab)}
+  th{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;text-align:left;
+     background:var(--ink);color:var(--slab);padding:8px}
+  td{padding:8px;border-bottom:1px solid var(--line)}
+  td.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  .rule{height:2px;background:var(--ink);margin:22px 0 14px}
+  .sechead{font-family:var(--display);font-size:24px;text-transform:uppercase;font-weight:700;letter-spacing:.03em;margin-bottom:9px}
+  .note{font-size:13px;color:var(--ink-soft);margin-bottom:12px}
+
+  @media(max-width:640px){
+    .brand{font-size:30px}
+    .grid{grid-template-columns:1fr}
+    .strip{grid-template-columns:repeat(2,1fr)}
+    .stat:nth-child(3){border-left:0}
+    .stat:nth-child(n+3){border-top:1px solid #26334A}
+    .job{font-size:19px}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="mast">
+      <div>
+        <div class="brand">Punch<span>list</span></div>
+        <div class="kicker">Lead desk · handyman &amp; remodeling</div>
+      </div>
+      <div class="stamp" id="clock">—</div>
+    </div>
+  </div>
+  <div class="strip" id="strip"></div>
+</header>
+
+<div class="wrap">
+  <nav role="tablist">
+    <button role="tab" id="t-board" aria-selected="true" onclick="show('board')">Board</button>
+    <button role="tab" id="t-intake" aria-selected="false" onclick="show('intake')">New lead</button>
+    <button role="tab" id="t-money" aria-selected="false" onclick="show('money')">Numbers</button>
+  </nav>
+
+  <!-- BOARD -->
+  <section id="board">
+    <div class="filters">
+      <input id="q" type="search" placeholder="Search name, city, job…" oninput="render()">
+      <select id="fStatus" onchange="render()">
+        <option value="">All statuses</option>
+        <option>New</option><option>Contacted</option><option>Quoted</option>
+        <option>Won</option><option>Sold</option><option>Dead</option>
+      </select>
+      <select id="fRoute" onchange="render()">
+        <option value="">Keep + sell</option>
+        <option value="keep">My crew only</option>
+        <option value="sell">For resale only</option>
+      </select>
+      <button class="ghost" onclick="exportCsv()">Export CSV</button>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <!-- INTAKE -->
+  <section id="intake" hidden>
+    <div class="panel">
+      <h2>Take a lead</h2>
+      <p class="sub">These are the exact fields your landing page form should collect. Every one of them feeds the score.</p>
+      <div class="grid">
+        <div class="f"><label for="name">Customer name</label><input id="name" placeholder="Dana Whitfield"></div>
+        <div class="f"><label for="phone">Phone</label><input id="phone" placeholder="(555) 210-4471"></div>
+        <div class="f"><label for="email">Email</label><input id="email" type="email" placeholder="dana@example.com"></div>
+        <div class="f"><label for="city">City / ZIP</label><input id="city" placeholder="Fort Worth 76107"></div>
+        <div class="f full"><label for="job">Job type</label>
+          <select id="job">
+            <option value="remodel">Kitchen / bath / addition remodel</option>
+            <option value="multi">Multi-trade repair (2+ trades)</option>
+            <option value="single">Single repair (drywall, door, faucet)</option>
+            <option value="small">Small task (mount TV, assemble, patch)</option>
+          </select>
+        </div>
+        <div class="f"><label for="budget">Stated budget</label>
+          <select id="budget">
+            <option value="unk">Not stated</option>
+            <option value="a">Under $500</option>
+            <option value="b">$500 – $2,000</option>
+            <option value="c">$2,000 – $10,000</option>
+            <option value="d">$10,000 – $50,000</option>
+            <option value="e">$50,000+</option>
+          </select>
+        </div>
+        <div class="f"><label for="timeline">Timeline</label>
+          <select id="timeline">
+            <option value="asap">Emergency / ASAP</option>
+            <option value="2wk">Within 2 weeks</option>
+            <option value="month">This month</option>
+            <option value="quarter">1–3 months</option>
+            <option value="plan">Just planning</option>
+          </select>
+        </div>
+        <div class="f"><label for="owner">Property</label>
+          <select id="owner">
+            <option value="own">Owns the home</option>
+            <option value="rent">Renting</option>
+            <option value="mgr">Property manager / landlord</option>
+          </select>
+        </div>
+        <div class="f"><label for="source">Where it came from</label>
+          <select id="source">
+            <option>Landing page form</option>
+            <option>Paid ad — Google</option>
+            <option>Paid ad — Meta</option>
+            <option>Referral</option>
+            <option>Phone call</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="f full"><label for="scope">What they described</label>
+          <textarea id="scope" placeholder="Master bath gut — tile shower, new vanity, wants it done before Thanksgiving."></textarea>
+        </div>
+      </div>
+      <button class="submit" onclick="addLead()">File the ticket</button>
+    </div>
+  </section>
+
+  <!-- MONEY -->
+  <section id="money" hidden>
+    <div class="sechead">Where the money is</div>
+    <p class="note">Two revenue lines: jobs your crew closes, and leads you sell to other pros. Sold-lead prices below are what the tool suggested and you accepted.</p>
+    <table id="srcTable"></table>
+    <div class="rule"></div>
+    <div class="sechead">Pricing model</div>
+    <p class="note">Suggested resale price = job-tier base × (0.5 + score ÷ 100). Tier bases: small task $6, single repair $14, multi-trade $24, remodel $48. Edit any price when you sell — the tool records what you actually charged.</p>
+    <table id="tierTable"></table>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- state ---------------- */
+var leads = [];
+var KEY = 'punchlist:leads';
+var seq = 1;
+
+var JOBS = {
+  remodel:{label:'Remodel',pts:20,base:48},
+  multi:{label:'Multi-trade repair',pts:14,base:24},
+  single:{label:'Single repair',pts:9,base:14},
+  small:{label:'Small task',pts:5,base:6}
+};
+var BUDGETS = {unk:{label:'Budget n/a',pts:6},a:{label:'Under $500',pts:5},b:{label:'$500–2k',pts:12},
+  c:{label:'$2k–10k',pts:20},d:{label:'$10k–50k',pts:27},e:{label:'$50k+',pts:30}};
+var TIMES = {asap:{label:'ASAP',pts:25},'2wk':{label:'2 weeks',pts:20},month:{label:'This month',pts:14},
+  quarter:{label:'1–3 months',pts:8},plan:{label:'Planning',pts:3}};
+var OWNERS = {own:{label:'Owner',pts:10},mgr:{label:'Property mgr',pts:12},rent:{label:'Renter',pts:3}};
+
+function score(l){
+  var s = JOBS[l.job].pts + BUDGETS[l.budget].pts + TIMES[l.timeline].pts + OWNERS[l.owner].pts;
+  s += (l.phone && l.email) ? 15 : (l.phone || l.email) ? 8 : 0;
+  if(l.scope && l.scope.length > 40) s += 5;
+  return Math.max(0, Math.min(100, s));
+}
+function price(l){
+  var p = JOBS[l.job].base * (0.5 + score(l)/100);
+  return Math.round(p);
+}
+function band(s){ return s >= 70 ? 'hot' : s >= 45 ? 'warm' : 'cold'; }
+
+/* ---------------- storage ---------------- */
+async function load(){
+  try{
+    var r = await window.storage.get(KEY);
+    if(r && r.value) leads = JSON.parse(r.value);
+  }catch(e){ leads = []; }
+  leads.forEach(function(l){ if(l.n >= seq) seq = l.n + 1; });
+  if(!leads.length) seed();
+  render();
+}
+async function save(){
+  try{ await window.storage.set(KEY, JSON.stringify(leads)); }
+  catch(e){ toast('Saved in this session only'); }
+}
+
+/* ---------------- actions ---------------- */
+function v(id){ return document.getElementById(id).value.trim(); }
+
+function addLead(){
+  if(!v('name')){ toast('Needs a name'); document.getElementById('name').focus(); return; }
+  if(!v('phone') && !v('email')){ toast('Needs a phone or email'); return; }
+  var l = {
+    n: seq++, name:v('name'), phone:v('phone'), email:v('email'), city:v('city'),
+    job:v('job'), budget:v('budget'), timeline:v('timeline'), owner:v('owner'),
+    source:v('source'), scope:v('scope'), status:'New', route:null, sold:null,
+    at:new Date().toISOString()
+  };
+  leads.unshift(l); save();
+  ['name','phone','email','city','scope'].forEach(function(k){ document.getElementById(k).value=''; });
+  toast('Ticket ' + tno(l) + ' filed · score ' + score(l));
+  show('board');
+}
+function tno(l){ return 'WO-' + String(l.n).padStart(4,'0'); }
+function find(n){ return leads.filter(function(l){ return l.n===n; })[0]; }
+
+function setStatus(n, s){ var l=find(n); l.status=s; save(); render(); }
+function route(n, r){
+  var l=find(n); l.route=r;
+  if(r==='sell' && !l.sold) l.status='New';
+  save(); render();
+}
+function sell(n){
+  var l=find(n);
+  var suggested = price(l);
+  var got = prompt('Sold ' + tno(l) + ' for how much? (suggested $' + suggested + ')', suggested);
+  if(got===null) return;
+  var amt = parseFloat(String(got).replace(/[^0-9.]/g,''));
+  if(isNaN(amt)){ toast('Enter a number'); return; }
+  l.sold = amt; l.route='sell'; l.status='Sold'; save(); render();
+  toast(tno(l) + ' sold for $' + amt);
+}
+function del(n){
+  if(!confirm('Delete ' + tno(find(n)) + ' for good?')) return;
+  leads = leads.filter(function(l){ return l.n!==n; }); save(); render();
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  var q = (document.getElementById('q').value||'').toLowerCase();
+  var fs = document.getElementById('fStatus').value;
+  var fr = document.getElementById('fRoute').value;
+
+  var rows = leads.filter(function(l){
+    if(fs && l.status!==fs) return false;
+    if(fr && l.route!==fr) return false;
+    if(q){
+      var hay = (l.name+' '+l.city+' '+l.scope+' '+JOBS[l.job].label+' '+l.source).toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
+    return true;
+  });
+
+  var el = document.getElementById('list');
+  if(!rows.length){
+    el.innerHTML = '<div class="empty"><h3>No tickets here</h3>'+
+      '<p>Either nothing matches your filters, or the board is clear.</p>'+
+      '<button class="ghost" onclick="show(\'intake\')">Take a lead</button></div>';
+  } else {
+    el.innerHTML = rows.map(card).join('');
+  }
+  stats();
+  money();
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+function card(l){
+  var s = score(l), b = band(s);
+  var contact = [l.phone, l.email].filter(Boolean).join(' · ');
+  var chips = [
+    '<span class="chip">'+esc(BUDGETS[l.budget].label)+'</span>',
+    '<span class="chip">'+esc(TIMES[l.timeline].label)+'</span>',
+    '<span class="chip">'+esc(OWNERS[l.owner].label)+'</span>',
+    '<span class="chip">'+esc(l.source)+'</span>',
+    '<span class="chip">'+esc(l.status)+'</span>'
+  ];
+  if(l.route==='keep') chips.push('<span class="chip keep">My crew</span>');
+  if(l.route==='sell') chips.push('<span class="chip sell">For resale</span>');
+  chips.push('<span class="chip price">'+(l.sold!=null ? 'sold $'+l.sold : 'ask $'+price(l))+'</span>');
+
+  var acts = [];
+  if(l.status==='New') acts.push('<button onclick="setStatus('+l.n+',\'Contacted\')">Contacted</button>');
+  if(l.status==='Contacted') acts.push('<button onclick="setStatus('+l.n+',\'Quoted\')">Quoted</button>');
+  if(l.status==='Quoted') acts.push('<button onclick="setStatus('+l.n+',\'Won\')">Won</button>');
+  if(l.route!=='keep') acts.push('<button onclick="route('+l.n+',\'keep\')">Keep it</button>');
+  if(l.sold==null) acts.push('<button onclick="sell('+l.n+')">Sell it</button>');
+  if(l.status!=='Dead') acts.push('<button onclick="setStatus('+l.n+',\'Dead\')">Dead</button>');
+  acts.push('<button class="danger" onclick="del('+l.n+')">Delete</button>');
+
+  return '<article class="ticket">'+
+    '<div class="rail '+b+'"><div class="sc">'+s+'</div><div class="scl">score</div></div>'+
+    '<div class="body">'+
+      '<div class="tno">'+tno(l)+' · '+new Date(l.at).toLocaleDateString()+'</div>'+
+      '<div class="job">'+esc(JOBS[l.job].label)+'</div>'+
+      '<div class="meta"><b>'+esc(l.name)+'</b>'+(l.city?' — '+esc(l.city):'')+'<br>'+esc(contact)+
+        (l.scope?'<br>'+esc(l.scope):'')+'</div>'+
+      '<div class="chips">'+chips.join('')+'</div>'+
+      '<div class="acts">'+acts.join('')+'</div>'+
+    '</div></article>';
+}
+
+function stats(){
+  var today = new Date().toDateString();
+  var newToday = leads.filter(function(l){ return new Date(l.at).toDateString()===today; }).length;
+  var live = leads.filter(function(l){ return ['New','Contacted','Quoted'].indexOf(l.status)>=0; });
+  var avg = leads.length ? Math.round(leads.reduce(function(a,l){ return a+score(l); },0)/leads.length) : 0;
+  var sold = leads.filter(function(l){ return l.sold!=null; });
+  var rev = sold.reduce(function(a,l){ return a+l.sold; },0);
+  var onShelf = leads.filter(function(l){ return l.route==='sell' && l.sold==null; })
+                     .reduce(function(a,l){ return a+price(l); },0);
+
+  document.getElementById('strip').innerHTML =
+    st(newToday,'new today') + st(live.length,'working') +
+    st('$'+rev.toFixed(0),'lead revenue') + st(avg,'avg score');
+  document.getElementById('clock').textContent = '$'+onShelf.toFixed(0)+' on the shelf';
+}
+function st(a,b){ return '<div class="stat"><b>'+a+'</b><i>'+b+'</i></div>'; }
+
+function money(){
+  var by = {};
+  leads.forEach(function(l){
+    var k=l.source;
+    by[k] = by[k] || {n:0,sold:0,rev:0,won:0,sc:0};
+    by[k].n++; by[k].sc += score(l);
+    if(l.sold!=null){ by[k].sold++; by[k].rev += l.sold; }
+    if(l.status==='Won') by[k].won++;
+  });
+  var rows = Object.keys(by).map(function(k){
+    var d=by[k];
+    return '<tr><td>'+esc(k)+'</td><td class="num">'+d.n+'</td><td class="num">'+
+      Math.round(d.sc/d.n)+'</td><td class="num">'+d.won+'</td><td class="num">'+d.sold+
+      '</td><td class="num">$'+d.rev.toFixed(0)+'</td></tr>';
+  }).join('');
+  document.getElementById('srcTable').innerHTML =
+    '<tr><th>Source</th><th>Leads</th><th>Avg score</th><th>Won</th><th>Sold</th><th>Revenue</th></tr>' +
+    (rows || '<tr><td colspan="6">No leads yet.</td></tr>');
+
+  document.getElementById('tierTable').innerHTML =
+    '<tr><th>Job tier</th><th>Base</th><th>At score 40</th><th>At score 70</th><th>At score 95</th></tr>' +
+    Object.keys(JOBS).map(function(k){
+      var b=JOBS[k].base;
+      return '<tr><td>'+JOBS[k].label+'</td><td class="num">$'+b+'</td><td class="num">$'+
+        Math.round(b*0.9)+'</td><td class="num">$'+Math.round(b*1.2)+'</td><td class="num">$'+
+        Math.round(b*1.45)+'</td></tr>';
+    }).join('');
+}
+
+/* ---------------- misc ---------------- */
+function show(id){
+  ['board','intake','money'].forEach(function(k){
+    document.getElementById(k).hidden = (k!==id);
+    document.getElementById('t-'+k).setAttribute('aria-selected', String(k===id));
+  });
+  window.scrollTo(0,0);
+}
+var tt;
+function toast(m){
+  var t=document.getElementById('toast'); t.textContent=m; t.classList.add('on');
+  clearTimeout(tt); tt=setTimeout(function(){ t.classList.remove('on'); },2400);
+}
+function exportCsv(){
+  var head=['ticket','date','name','phone','email','city','job','budget','timeline','property','source','scope','score','ask','status','route','sold'];
+  var lines=[head.join(',')];
+  leads.forEach(function(l){
+    lines.push([tno(l), new Date(l.at).toLocaleDateString(), l.name, l.phone, l.email, l.city,
+      JOBS[l.job].label, BUDGETS[l.budget].label, TIMES[l.timeline].label, OWNERS[l.owner].label,
+      l.source, l.scope, score(l), price(l), l.status, l.route||'', l.sold==null?'':l.sold]
+      .map(function(c){ return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'; }).join(','));
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='punchlist-leads.csv'; a.click();
+  toast('CSV downloaded');
+}
+function seed(){
+  var demo=[
+    {name:'Dana Whitfield',phone:'(555) 210-4471',email:'dana@example.com',city:'Fort Worth 76107',
+     job:'remodel',budget:'d',timeline:'2wk',owner:'own',source:'Paid ad — Google',
+     scope:'Master bath gut — tile shower, new vanity, wants it done before the holidays.'},
+    {name:'Marcus Oyelaran',phone:'(555) 884-0192',email:'',city:'Arlington 76010',
+     job:'single',budget:'a',timeline:'asap',owner:'rent',source:'Landing page form',
+     scope:'Kitchen faucet leaking under the sink.'},
+    {name:'Bridgeway Property Group',phone:'(555) 447-3300',email:'ops@example.com',city:'Dallas 75204',
+     job:'multi',budget:'c',timeline:'month',owner:'mgr',source:'Referral',
+     scope:'Turnover on 4 units — paint, drywall patches, two water heaters.'}
+  ];
+  demo.forEach(function(d){
+    d.n=seq++; d.status='New'; d.route=null; d.sold=null; d.at=new Date().toISOString();
+    leads.push(d);
+  });
+  save();
+}
+load();
+</script>
+</body>
+</html>
